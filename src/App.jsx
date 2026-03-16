@@ -807,7 +807,7 @@ const App = () => {
           
           <div className="flex justify-between items-center border-b-4 border-indigo-600 pb-6 mb-8">
              <div className="flex items-center gap-6">
-                 <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E"; }} />
+                 <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Raudhah+Team&background=e0e7ff&color=4f46e5&size=128"; }} />
                  <div>
                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Laporan Eksekutif</h1>
                    <p className="text-lg font-bold text-slate-500 mt-1 uppercase tracking-widest">Raudhah Team Resources (Bazar 2026)</p>
@@ -873,9 +873,9 @@ const App = () => {
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
               @page { size: A4 landscape; margin: 10mm; }
-              body, html { background-color: white !important; margin: 0 !important; padding: 0 !important; }
+              body, html { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; }
               .print-hide { display: none !important; }
-              .print-modal-content-slide { width: 100% !important; height: auto !important; max-width: none !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; box-sizing: border-box !important; page-break-after: always; }
+              .print-modal-content-slide { width: 297mm !important; height: 210mm !important; max-width: none !important; padding: 15mm !important; margin: 0 !important; border: none !important; box-shadow: none !important; box-sizing: border-box !important; overflow: hidden !important; page-break-after: always; }
               * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
         `}} />
@@ -892,16 +892,13 @@ const App = () => {
         <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content">
           
           <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-4 mb-6">
-             {/* Kiri: Logo (Ditukar kepada logo.png asal tanpa filter penukar warna) */}
+             {/* Kiri: Logo (DIKEMASKINI dengan imej yang dimuat naik) */}
              <div className="w-1/4 flex justify-start">
                  <img 
                      src="/logo.png" 
                      alt="Logo Syarikat" 
-                     className="w-20 h-20 object-contain print:filter-none"
-                     onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E";
-                     }}
+                     className="w-24 h-auto max-h-24 object-contain print:w-28 print:filter-none"
+                     onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Raudhah+Team&background=e0e7ff&color=4f46e5&size=128"; }}
                  />
              </div>
              
@@ -1040,17 +1037,20 @@ const App = () => {
                   background-color: white !important; 
                   margin: 0 !important; 
                   padding: 0 !important; 
+                  width: 210mm !important;
+                  height: 148mm !important;
               }
               .print-hide { display: none !important; }
               .print-modal-content { 
-                  width: 100% !important; 
-                  height: auto !important;
+                  width: 210mm !important; 
+                  height: 148mm !important;
                   max-width: none !important; 
-                  padding: 0 !important; 
+                  padding: 10mm 15mm !important; 
                   margin: 0 !important; 
                   border: none !important; 
                   box-shadow: none !important; 
                   box-sizing: border-box !important;
+                  overflow: hidden !important;
                   page-break-after: always;
                   page-break-inside: avoid;
               }
