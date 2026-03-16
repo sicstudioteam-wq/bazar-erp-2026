@@ -1,0 +1,16 @@
+{
+  "short_name": "Bazar ERP",
+  "name": "Bazar 2026 ERP System",
+  "description": "Sistem pengurusan jualan, stok, belanja, dan gaji untuk Bazar 2026.",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#f8fafc"
+}
