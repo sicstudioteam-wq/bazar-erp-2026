@@ -807,7 +807,7 @@ const App = () => {
           
           <div className="flex justify-between items-center border-b-4 border-indigo-600 pb-6 mb-8">
              <div className="flex items-center gap-6">
-                 <img src="image_9d2c3c.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
+                 <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E"; }} />
                  <div>
                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Laporan Eksekutif</h1>
                    <p className="text-lg font-bold text-slate-500 mt-1 uppercase tracking-widest">Raudhah Team Resources (Bazar 2026)</p>
@@ -892,13 +892,16 @@ const App = () => {
         <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content">
           
           <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-4 mb-6">
-             {/* Kiri: Logo (DIKEMASKINI dengan imej yang dimuat naik) */}
+             {/* Kiri: Logo (Ditukar kepada logo.png asal tanpa filter penukar warna) */}
              <div className="w-1/4 flex justify-start">
                  <img 
-                     src="image_9d2c3c.png" 
+                     src="/logo.png" 
                      alt="Logo Syarikat" 
-                     className="w-24 h-auto max-h-24 object-contain print:w-28 print:filter-none"
-                     onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                     className="w-20 h-20 object-contain print:filter-none"
+                     onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E";
+                     }}
                  />
              </div>
              
