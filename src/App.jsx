@@ -9,7 +9,7 @@ import {
   ChevronDown, ChevronUp, Smartphone, Banknote, History, Package, 
   Layers, Clock, Box, Plus, Save, FileText, Printer, Trash2, Edit3, 
   DollarSign, CheckCircle2, X, Tag, AlertTriangle, Download,
-  FileSpreadsheet, Presentation, Database, Upload, RefreshCcw
+  FileSpreadsheet, Presentation, Database, Upload
 } from 'lucide-react';
 
 // Firebase Imports
@@ -322,9 +322,6 @@ const App = () => {
   const [editingStaffProfile, setEditingStaffProfile] = useState(null);
   const [editingPrice, setEditingPrice] = useState(null);
   
-  // State baru untuk amaran pertindanan data
-  const [duplicateAlert, setDuplicateAlert] = useState(null);
-  
   const [selectedPayslip, setSelectedPayslip] = useState(null);
   const [isReportSlide, setIsReportSlide] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -569,26 +566,14 @@ const App = () => {
   const handleAddSales = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    const date = fd.get('date');
-    
-    // Semakan Double Entry (hanya jika mod tambah baru)
-    if (!editingRecord) {
-      const existing = salesRecords.find(r => r.date === date);
-      if (existing) {
-        setDuplicateAlert({ type: 'sales', record: existing, label: `Tarikh ${date}` });
-        return;
-      }
-    }
-
     await saveToFirestore('sales', editingRecord?.id, {
-      date: date,
+      date: fd.get('date'),
       kgBelah2Cash: parseFloat(fd.get('sc') || 0),
       kgBelah2QR: parseFloat(fd.get('sq') || 0),
       evokeCash: parseFloat(fd.get('ec') || 0),
       evokeQR: parseFloat(fd.get('eq') || 0)
     });
     setEditingRecord(null);
-    setDuplicateAlert(null);
     e.target.reset();
   };
 
@@ -597,15 +582,6 @@ const App = () => {
     const fd = new FormData(e.target);
     const date = fd.get('date');
     const location = fd.get('location');
-
-    // Semakan Double Entry (hanya jika mod tambah baru)
-    if (!editingRecord) {
-      const existingGroup = groupedStockByBranch.find(g => g.date === date && g.location === location);
-      if (existingGroup) {
-        setDuplicateAlert({ type: 'stock', record: existingGroup, label: `${location} - ${date}` });
-        return;
-      }
-    }
 
     if (editingRecord && editingRecord.items) {
         for (const p of stockPrices) {
@@ -639,35 +615,20 @@ const App = () => {
         }
     }
     setEditingRecord(null);
-    setDuplicateAlert(null);
     e.target.reset();
   };
 
   const handleAddExpense = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    const date = fd.get('date');
-    const location = fd.get('location');
-    const item = fd.get('item');
-
-    // Semakan Double Entry Per Item/Tarikh (hanya jika mod tambah baru)
-    if (!editingRecord) {
-      const existing = expenseRecords.find(r => r.date === date && r.location === location && r.item === item);
-      if (existing) {
-        setDuplicateAlert({ type: 'expenses', record: existing, label: `${item} (${location} - ${date})` });
-        return;
-      }
-    }
-
     await saveToFirestore('expenses', editingRecord?.id, {
-      date: date,
-      location: location,
-      item: item,
+      date: fd.get('date'),
+      location: fd.get('location'),
+      item: fd.get('item'),
       amount: parseFloat(fd.get('amount') || 0),
       isAdvanced: fd.get('advanced') === 'on'
     });
     setEditingRecord(null);
-    setDuplicateAlert(null);
     e.target.reset();
   };
 
@@ -677,21 +638,9 @@ const App = () => {
     if (hours <= 0) return;
 
     const fd = new FormData(e.target);
-    const date = fd.get('date');
-    const staffId = fd.get('staffId');
-
-    // Semakan Kehadiran (hanya jika mod tambah baru)
-    if (!editingRecord) {
-      const existing = staffWorkRecords.find(r => r.date === date && r.staffId === staffId && !r.isAdjustment);
-      if (existing) {
-        setDuplicateAlert({ type: 'staff', record: existing, label: `${staffId} pada ${date}` });
-        return;
-      }
-    }
-
     await saveToFirestore('staff_work', editingRecord?.id, {
-      date: date,
-      staffId: staffId,
+      date: fd.get('date'),
+      staffId: fd.get('staffId'),
       hours: hours,
       startTime: startTime,
       endTime: endTime,
@@ -700,7 +649,6 @@ const App = () => {
     });
     
     setEditingRecord(null);
-    setDuplicateAlert(null);
     setStaffHours(''); setStaffMinutes(''); setStartTime(''); setEndTime(''); setBreakMinutes('');
     e.target.reset();
   };
@@ -723,7 +671,6 @@ const App = () => {
     });
 
     setEditingRecord(null);
-    setDuplicateAlert(null);
     e.target.reset();
   };
 
@@ -770,7 +717,6 @@ const App = () => {
   const startEdit = (record, tab) => {
     setEditingRecord(record);
     setSubTab(tab);
-    setDuplicateAlert(null); // Tutup amaran jika masuk mod edit
 
     if (tab === 'staff' && !record.isAdjustment && record.hours) {
       setStartTime(record.startTime || '');
@@ -861,7 +807,7 @@ const App = () => {
           
           <div className="flex justify-between items-center border-b-4 border-indigo-600 pb-6 mb-8">
              <div className="flex items-center gap-6">
-                 <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" style={{ filter: 'invert(1) grayscale(100%) contrast(200%)', mixBlendMode: 'multiply' }} onError={(e) => e.target.style.display = 'none'} />
+                 <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E"; }} />
                  <div>
                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Laporan Eksekutif</h1>
                    <p className="text-lg font-bold text-slate-500 mt-1 uppercase tracking-widest">Raudhah Team Resources (Bazar 2026)</p>
@@ -926,10 +872,10 @@ const App = () => {
 
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
-              @page { size: A4 landscape; margin: 0; }
-              body, html { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; }
+              @page { size: A4 landscape; margin: 10mm; }
+              body, html { background-color: white !important; margin: 0 !important; padding: 0 !important; }
               .print-hide { display: none !important; }
-              .print-modal-content-slide { width: 297mm !important; height: 210mm !important; max-width: none !important; padding: 15mm !important; margin: 0 !important; border: none !important; box-shadow: none !important; box-sizing: border-box !important; overflow: hidden !important; page-break-after: always; }
+              .print-modal-content-slide { width: 100% !important; height: auto !important; max-width: none !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; box-sizing: border-box !important; page-break-after: always; }
               * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
         `}} />
@@ -946,13 +892,12 @@ const App = () => {
         <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content">
           
           <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-4 mb-6">
-             {/* Kiri: Logo (Ditukar kepada logo.png asal dengan efek grayscale) */}
+             {/* Kiri: Logo (DIKEMASKINI dengan imej yang dimuat naik) */}
              <div className="w-1/4 flex justify-start">
                  <img 
-                     src="/logo.png" 
+                     src="ChatGPT Image Mar 4, 2026, 10_06_45 PM.jpg" 
                      alt="Logo Syarikat" 
-                     className="w-20 h-20 object-contain print:filter-none"
-                     style={{ filter: 'invert(1) grayscale(100%) contrast(200%)', mixBlendMode: 'multiply' }}
+                     className="w-24 h-auto max-h-24 object-contain print:w-28"
                  />
              </div>
              
@@ -1045,12 +990,12 @@ const App = () => {
 
              <div className="w-72 bg-slate-800 print:bg-slate-100 text-white print:text-black p-4 rounded-xl print:rounded-none border border-slate-700 print:border-black shadow-lg print:shadow-none space-y-2">
                <div className="flex justify-between text-xs font-bold text-slate-300 print:text-slate-700">
-                 <span>Pendapatan Kasar:</span>
-                 <span>RM {selectedPayslip.payInfo.grossPay.toFixed(2)}</span>
+                  <span>Pendapatan Kasar:</span>
+                  <span>RM {selectedPayslip.payInfo.grossPay.toFixed(2)}</span>
                </div>
                <div className="flex justify-between text-xs font-bold text-slate-300 print:text-slate-700 border-b border-slate-600 print:border-slate-300 pb-2">
-                 <span>Potongan (Advance):</span>
-                 <span className="text-rose-400 print:text-black">RM {selectedPayslip.payInfo.totalAdvance.toFixed(2)}</span>
+                  <span>Potongan (Advance):</span>
+                  <span className="text-rose-400 print:text-black">RM {selectedPayslip.payInfo.totalAdvance.toFixed(2)}</span>
                </div>
                <div className="flex justify-between items-center text-lg font-black pt-1">
                   <span className="uppercase tracking-widest text-[10px]">Gaji Bersih</span>
@@ -1085,26 +1030,23 @@ const App = () => {
           @media print {
               @page { 
                   size: A5 landscape; 
-                  margin: 0mm; 
+                  margin: 10mm; 
               }
               body, html { 
                   background-color: white !important; 
                   margin: 0 !important; 
                   padding: 0 !important; 
-                  width: 210mm !important;
-                  height: 148mm !important;
               }
               .print-hide { display: none !important; }
               .print-modal-content { 
-                  width: 210mm !important; 
-                  height: 148mm !important;
+                  width: 100% !important; 
+                  height: auto !important;
                   max-width: none !important; 
-                  padding: 10mm 15mm !important; 
+                  padding: 0 !important; 
                   margin: 0 !important; 
                   border: none !important; 
                   box-shadow: none !important; 
                   box-sizing: border-box !important;
-                  overflow: hidden !important;
                   page-break-after: always;
                   page-break-inside: avoid;
               }
@@ -1346,7 +1288,6 @@ const App = () => {
               setEditingRecord(null); 
               setEditingStaffProfile(null); 
               setEditingPrice(null); 
-              setDuplicateAlert(null);
               setStartTime(''); 
               setEndTime(''); 
               setStaffHours(''); 
@@ -1363,36 +1304,6 @@ const App = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* LEFT PANEL: INPUT FORM */}
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-6 h-fit sticky top-8">
-          
-          {/* AMARAN PERTINDANAN DATA (DUPLICATE ALERT) */}
-          {duplicateAlert && (
-            <div className="p-5 bg-rose-50 border-2 border-rose-200 rounded-[1.5rem] space-y-4 animate-in zoom-in duration-300">
-              <div className="flex items-start gap-3">
-                <div className="bg-rose-500 p-2 rounded-xl text-white">
-                  <AlertTriangle className="w-5 h-5" />
-                </div>
-                <div>
-                  <h5 className="text-xs font-black uppercase text-rose-700 tracking-tight">Data Sudah Wujud!</h5>
-                  <p className="text-[10px] font-bold text-rose-500 mt-1">Sistem mengesan rekod sedia ada untuk <span className="underline">{duplicateAlert.label}</span>. Elakkan rekod bertindih.</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => startEdit(duplicateAlert.record, duplicateAlert.type)}
-                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-rose-200"
-                >
-                  <RefreshCcw className="w-3.5 h-3.5" /> Kemaskini Rekod Tersebut
-                </button>
-                <button 
-                  onClick={() => setDuplicateAlert(null)}
-                  className="px-3 bg-white border border-rose-200 text-rose-400 rounded-xl hover:bg-rose-100 transition-all"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
           {editingRecord && !editingRecord.isAdjustment && subTab !== 'stock' ? (
             <div className="flex justify-between items-center p-3 bg-amber-50 rounded-2xl border border-amber-200">
                <div className="flex items-center gap-2">
@@ -1745,7 +1656,7 @@ const App = () => {
                               >
                                  <div className="flex items-center gap-3">
                                     <div className={`p-2 rounded-xl ${isGroupExp ? (colorTheme === 'evoke' ? 'bg-indigo-600 text-white' : 'bg-rose-600 text-white') : `bg-slate-100 text-slate-500 group-hover:${colorTheme === 'evoke' ? 'text-indigo-600 bg-indigo-50' : 'text-rose-600 bg-rose-50'}`}`}>
-                                        <Package className="w-4 h-4" />
+                                       <Package className="w-4 h-4" />
                                     </div>
                                     <div>
                                        <div className="text-xs font-black uppercase text-slate-800">{group.date}</div>
@@ -1777,18 +1688,18 @@ const App = () => {
                                 <div className="bg-slate-50/80 px-4 pb-4 pt-2 animate-in slide-in-from-top-2 duration-300">
                                    <div className="space-y-2 border-t border-slate-200 pt-3">
                                       {group.items.map((item) => (
-                                         <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                                            <div>
-                                               <div className="text-[10px] font-bold text-slate-800">{item.item}</div>
-                                               <div className="text-[9px] text-slate-500 font-medium mt-0.5">Kuantiti: x{item.qty}</div>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                               <div className="text-right font-black text-[10px] mr-1 text-slate-900">RM {Number(item.total||0).toFixed(2)}</div>
-                                               <div className="flex gap-1.5">
-                                                  <button onClick={(e) => { e.stopPropagation(); deleteRecord('stock', item.id); }} className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-md transition-all" title="Padam Item Ini"><Trash2 className="w-3.5 h-3.5"/></button>
-                                               </div>
-                                            </div>
-                                         </div>
+                                        <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                                           <div>
+                                              <div className="text-[10px] font-bold text-slate-800">{item.item}</div>
+                                              <div className="text-[9px] text-slate-500 font-medium mt-0.5">Kuantiti: x{item.qty}</div>
+                                           </div>
+                                           <div className="flex items-center gap-3">
+                                              <div className="text-right font-black text-[10px] mr-1 text-slate-900">RM {Number(item.total||0).toFixed(2)}</div>
+                                              <div className="flex gap-1.5">
+                                                 <button onClick={(e) => { e.stopPropagation(); deleteRecord('stock', item.id); }} className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-md transition-all" title="Padam Item Ini"><Trash2 className="w-3 h-3"/></button>
+                                              </div>
+                                           </div>
+                                        </div>
                                       ))}
                                    </div>
                                 </div>
@@ -1859,19 +1770,19 @@ const App = () => {
                                 <div className="space-y-2 border-t border-slate-200 pt-4">
                                    {group.items.map((item) => (
                                      <div key={item.id} className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                                       <div>
-                                          <div className="flex items-center gap-2">
-                                             <span className="text-xs font-bold text-slate-800">{item.item}</span>
-                                             {item.isAdvanced ? <span className="text-[8px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded uppercase font-black">Hutang/Adv</span> : null}
-                                          </div>
-                                       </div>
-                                       <div className="flex items-center gap-4">
-                                          <div className="text-right font-black text-xs mr-2 text-rose-500">RM {Number(item.amount||0).toFixed(2)}</div>
-                                          <div className="flex gap-2">
-                                             <button onClick={() => startEdit(item, 'expenses')} className="p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-lg transition-all"><Edit3 className="w-3.5 h-3.5"/></button>
-                                             <button onClick={() => deleteRecord('expenses', item.id)} className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg transition-all"><Trash2 className="w-3.5 h-3.5"/></button>
-                                          </div>
-                                       </div>
+                                        <div>
+                                           <div className="flex items-center gap-2">
+                                              <span className="text-xs font-bold text-slate-800">{item.item}</span>
+                                              {item.isAdvanced ? <span className="text-[8px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded uppercase font-black">Hutang/Adv</span> : null}
+                                           </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                           <div className="text-right font-black text-xs mr-2 text-rose-500">RM {Number(item.amount||0).toFixed(2)}</div>
+                                           <div className="flex gap-2">
+                                              <button onClick={() => startEdit(item, 'expenses')} className="p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-lg transition-all"><Edit3 className="w-3.5 h-3.5"/></button>
+                                              <button onClick={() => deleteRecord('expenses', item.id)} className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg transition-all"><Trash2 className="w-3.5 h-3.5"/></button>
+                                           </div>
+                                        </div>
                                      </div>
                                    ))}
                                 </div>
@@ -1921,7 +1832,7 @@ const App = () => {
                                 <div className="space-y-2 border-t border-slate-200 pt-4">
                                    {group.items.map((item) => (
                                      <div key={item.id} className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                                       
+                                        
                                         {/* Rekod Kewangan vs Rekod Kehadiran */}
                                         {item.isAdjustment ? (
                                            <div>
@@ -2094,7 +2005,6 @@ const App = () => {
                   setEditingRecord(null); 
                   setEditingStaffProfile(null); 
                   setEditingPrice(null); 
-                  setDuplicateAlert(null);
                   setStartTime(''); 
                   setEndTime(''); 
                   setStaffHours(''); 
