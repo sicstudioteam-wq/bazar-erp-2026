@@ -807,7 +807,7 @@ const App = () => {
           
           <div className="flex justify-between items-center border-b-4 border-indigo-600 pb-6 mb-8">
              <div className="flex items-center gap-6">
-                 <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Raudhah+Team&background=e0e7ff&color=4f46e5&size=128"; }} />
+                 <img src="image_9c5d82.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
                  <div>
                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Laporan Eksekutif</h1>
                    <p className="text-lg font-bold text-slate-500 mt-1 uppercase tracking-widest">Raudhah Team Resources (Bazar 2026)</p>
@@ -873,9 +873,9 @@ const App = () => {
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
               @page { size: A4 landscape; margin: 10mm; }
-              body, html { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; }
+              body, html { background-color: white !important; margin: 0 !important; padding: 0 !important; }
               .print-hide { display: none !important; }
-              .print-modal-content-slide { width: 297mm !important; height: 210mm !important; max-width: none !important; padding: 15mm !important; margin: 0 !important; border: none !important; box-shadow: none !important; box-sizing: border-box !important; overflow: hidden !important; page-break-after: always; }
+              .print-modal-content-slide { width: 100% !important; height: auto !important; max-width: none !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; box-sizing: border-box !important; page-break-after: always; }
               * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
         `}} />
@@ -891,14 +891,14 @@ const App = () => {
         {/* Kontena Utama Slip Gaji (Saiz Ditetapkan Kepada A5) */}
         <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content">
           
-          <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-4 mb-6">
-             {/* Kiri: Logo (DIKEMASKINI dengan imej yang dimuat naik) */}
+          <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-3 mb-4">
+             {/* Kiri: Logo */}
              <div className="w-1/4 flex justify-start">
                  <img 
-                     src="/logo.png" 
+                     src="image_9c5d82.png" 
                      alt="Logo Syarikat" 
                      className="w-24 h-auto max-h-24 object-contain print:w-28 print:filter-none"
-                     onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Raudhah+Team&background=e0e7ff&color=4f46e5&size=128"; }}
+                     onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
                  />
              </div>
              
@@ -920,7 +920,7 @@ const App = () => {
              </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6 bg-slate-50 print:bg-transparent p-4 print:p-0 rounded-xl print:rounded-none border border-slate-200 print:border-none">
+          <div className="grid grid-cols-2 gap-4 mb-4 bg-slate-50 print:bg-transparent p-3 print:p-0 rounded-xl print:rounded-none border border-slate-200 print:border-none">
              <div className="space-y-1">
                <div className="text-[10px] uppercase font-bold text-slate-400 print:text-slate-600">Nama Kakitangan</div>
                <div className="text-lg font-black uppercase text-slate-800 print:text-black">{selectedPayslip.name}</div>
@@ -931,7 +931,7 @@ const App = () => {
              </div>
           </div>
 
-          <table className="w-full text-sm mb-6 flex-1 border border-slate-300">
+          <table className="w-full text-sm mb-4 flex-1 border border-slate-300">
              <thead>
                <tr className="bg-slate-800 print:bg-slate-200 text-white print:text-slate-900">
                   <th className="py-2 px-4 text-left font-bold uppercase text-[10px] tracking-widest border-r border-slate-700 print:border-slate-300">Keterangan Pendapatan</th>
@@ -974,7 +974,7 @@ const App = () => {
              </tbody>
           </table>
 
-          <div className="flex justify-between items-end mb-6">
+          <div className="flex justify-between items-end mb-2">
              <div className="text-[9px] text-slate-500 print:text-black max-w-sm space-y-1 font-mono uppercase">
                {selectedPayslip.payInfo.weeklyBreakdown.length > 0 && (
                  <>
@@ -1005,14 +1005,12 @@ const App = () => {
              </div>
           </div>
 
-          <div className="flex justify-between text-[10px] font-bold text-slate-500 print:text-black mt-auto pt-6">
-             <div className="text-center">
-               <div className="w-40 border-b-2 border-slate-400 print:border-black mb-2 h-10"></div>
-               <p className="uppercase tracking-widest">Pengurus Operasi</p>
+          <div className="flex justify-between text-[10px] font-bold text-slate-500 print:text-black mt-auto pt-4">
+             <div className="text-center w-40">
+               <div className="border-t border-slate-500 print:border-black pt-1 mt-8 uppercase tracking-widest">Pengurus Operasi</div>
              </div>
-             <div className="text-center">
-               <div className="w-40 border-b-2 border-slate-400 print:border-black mb-2 h-10"></div>
-               <p className="uppercase tracking-widest">Tandatangan Pekerja</p>
+             <div className="text-center w-40">
+               <div className="border-t border-slate-500 print:border-black pt-1 mt-8 uppercase tracking-widest">Tandatangan Pekerja</div>
              </div>
           </div>
 
@@ -1037,15 +1035,13 @@ const App = () => {
                   background-color: white !important; 
                   margin: 0 !important; 
                   padding: 0 !important; 
-                  width: 210mm !important;
-                  height: 148mm !important;
               }
               .print-hide { display: none !important; }
               .print-modal-content { 
                   width: 210mm !important; 
                   height: 148mm !important;
                   max-width: none !important; 
-                  padding: 10mm 15mm !important; 
+                  padding: 5mm 10mm !important; 
                   margin: 0 !important; 
                   border: none !important; 
                   box-shadow: none !important; 
