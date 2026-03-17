@@ -807,7 +807,7 @@ const App = () => {
           
           <div className="flex justify-between items-center border-b-4 border-indigo-600 pb-6 mb-8">
              <div className="flex items-center gap-6">
-                 <img src="image_9c5d82.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
+                 <img src="logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
                  <div>
                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Laporan Eksekutif</h1>
                    <p className="text-lg font-bold text-slate-500 mt-1 uppercase tracking-widest">Raudhah Team Resources (Bazar 2026)</p>
@@ -895,7 +895,7 @@ const App = () => {
              {/* Kiri: Logo */}
              <div className="w-1/4 flex justify-start">
                  <img 
-                     src="image_9c5d82.png" 
+                     src="logo.png" 
                      alt="Logo Syarikat" 
                      className="w-24 h-auto max-h-24 object-contain print:w-28 print:filter-none"
                      onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
