@@ -807,7 +807,7 @@ const App = () => {
           
           <div className="flex justify-between items-center border-b-4 border-indigo-600 pb-6 mb-8">
              <div className="flex items-center gap-6">
-                 <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E"; }} />
+                 <img src="image_9c5d82.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
                  <div>
                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Laporan Eksekutif</h1>
                    <p className="text-lg font-bold text-slate-500 mt-1 uppercase tracking-widest">Raudhah Team Resources (Bazar 2026)</p>
@@ -873,9 +873,9 @@ const App = () => {
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
               @page { size: A4 landscape; margin: 10mm; }
-              body, html { background-color: white !important; margin: 0 !important; padding: 0 !important; }
+              body, html { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; }
               .print-hide { display: none !important; }
-              .print-modal-content-slide { width: 100% !important; height: auto !important; max-width: none !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; box-sizing: border-box !important; page-break-after: always; }
+              .print-modal-content-slide { width: 297mm !important; height: 210mm !important; max-width: none !important; padding: 15mm !important; margin: 0 !important; border: none !important; box-shadow: none !important; box-sizing: border-box !important; overflow: hidden !important; page-break-after: always; }
               * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
         `}} />
@@ -885,101 +885,116 @@ const App = () => {
 
   // === HALAMAN PREVIEW SLIP GAJI (EKSKLUSIF A5 LANDSCAPE KORPORAT) ===
   if (selectedPayslip) {
+    const allowanceNotes = selectedPayslip.records.filter(r => r.isAdjustment && r.allowance > 0 && r.desc).map(r => r.desc).join(', ');
+    const bonusNotes = selectedPayslip.records.filter(r => r.isAdjustment && r.bonus > 0 && r.desc).map(r => r.desc).join(', ');
+    const advanceNotes = selectedPayslip.records.filter(r => r.isAdjustment && r.advance > 0 && r.desc).map(r => r.desc).join(', ');
+
     return (
-      <div className="min-h-screen bg-slate-300 p-8 print:p-0 print:bg-white flex justify-center items-center font-sans">
+      <div className="min-h-screen bg-slate-300 p-4 md:p-8 print:p-0 print:bg-white flex justify-center items-center font-sans">
         
-        {/* Kontena Utama Slip Gaji (Saiz Ditetapkan Kepada A5) */}
-        <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content">
+        {/* Kontena Utama Slip Gaji (Saiz Ditetapkan Secara Tepat Kepada A5) */}
+        <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content overflow-hidden" style={{ width: '210mm', height: '148mm' }}>
           
-          <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-4 mb-6">
-             {/* Kiri: Logo (DIKEMASKINI dengan imej yang dimuat naik) */}
+          <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-2 mb-3">
+             {/* Kiri: Logo */}
              <div className="w-1/4 flex justify-start">
                  <img 
-                     src="logo.png" 
+                     src="image_9c5d82.png" 
                      alt="Logo Syarikat" 
-                     className="w-24 h-auto max-h-24 object-contain print:w-28"
+                     className="w-16 h-16 object-contain print:filter-none"
+                     onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
                  />
              </div>
              
              {/* Tengah: Nama Syarikat & Maklumat */}
-             <div className="w-2/4 text-center flex flex-col justify-center pt-2">
-                 <h1 className="text-2xl md:text-3xl font-black uppercase tracking-wider text-slate-900">
+             <div className="w-2/4 text-center flex flex-col justify-center pt-1">
+                 <h1 className="text-xl md:text-2xl font-black uppercase tracking-wider text-slate-900">
                     Raudhah Team Resources
                  </h1>
-                 <p className="text-sm font-bold text-slate-700 mt-1">
+                 <p className="text-[10px] font-bold text-slate-700 mt-1">
                     (002921662-A)
                  </p>
              </div>
              
              {/* Kanan: Info Slip Gaji */}
-             <div className="w-1/4 text-right pt-2">
-                 <h2 className="text-xl font-black uppercase text-indigo-700 tracking-widest print:text-black">Penyata Gaji</h2>
-                 <p className="text-[10px] font-bold text-slate-600 mt-2 uppercase">Tarikh: {new Date().toLocaleDateString('ms-MY')}</p>
-                 <p className="text-[10px] text-slate-400 mt-0.5 font-mono">ID: PAY-{new Date().getTime().toString().slice(-6)}</p>
+             <div className="w-1/4 text-right pt-1">
+                 <h2 className="text-lg font-black uppercase text-indigo-700 tracking-widest print:text-black">Penyata Gaji</h2>
+                 <p className="text-[9px] font-bold text-slate-600 mt-1 uppercase">Tarikh: {new Date().toLocaleDateString('ms-MY')}</p>
+                 <p className="text-[9px] text-slate-400 mt-0.5 font-mono">ID: PAY-{new Date().getTime().toString().slice(-6)}</p>
              </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6 bg-slate-50 print:bg-transparent p-4 print:p-0 rounded-xl print:rounded-none border border-slate-200 print:border-none">
-             <div className="space-y-1">
-               <div className="text-[10px] uppercase font-bold text-slate-400 print:text-slate-600">Nama Kakitangan</div>
-               <div className="text-lg font-black uppercase text-slate-800 print:text-black">{selectedPayslip.name}</div>
+          <div className="grid grid-cols-2 gap-3 mb-3 bg-slate-50 print:bg-transparent p-2 print:p-0 rounded-lg print:rounded-none border border-slate-200 print:border-none">
+             <div className="space-y-0.5">
+               <div className="text-[9px] uppercase font-bold text-slate-400 print:text-slate-600">Nama Kakitangan</div>
+               <div className="text-sm font-black uppercase text-slate-800 print:text-black">{selectedPayslip.name}</div>
              </div>
-             <div className="space-y-1 text-right">
-               <div className="text-[10px] uppercase font-bold text-slate-400 print:text-slate-600">Kategori Jawatan</div>
-               <div className="text-sm font-black uppercase text-slate-700 print:text-black">Kakitangan Operasi (Bazar)</div>
+             <div className="space-y-0.5 text-right">
+               <div className="text-[9px] uppercase font-bold text-slate-400 print:text-slate-600">Kategori Jawatan</div>
+               <div className="text-xs font-black uppercase text-slate-700 print:text-black">Kakitangan Operasi (Bazar)</div>
              </div>
           </div>
 
-          <table className="w-full text-sm mb-6 flex-1 border border-slate-300">
+          <table className="w-full text-[10px] mb-3 flex-1 border border-slate-300">
              <thead>
                <tr className="bg-slate-800 print:bg-slate-200 text-white print:text-slate-900">
-                  <th className="py-2 px-4 text-left font-bold uppercase text-[10px] tracking-widest border-r border-slate-700 print:border-slate-300">Keterangan Pendapatan</th>
-                  <th className="py-2 px-4 text-center font-bold uppercase text-[10px] tracking-widest border-r border-slate-700 print:border-slate-300 w-28">Kuantiti (Jam)</th>
-                  <th className="py-2 px-4 text-center font-bold uppercase text-[10px] tracking-widest border-r border-slate-700 print:border-slate-300 w-28">Kadar (RM)</th>
-                  <th className="py-2 px-4 text-right font-bold uppercase text-[10px] tracking-widest w-36">Jumlah (RM)</th>
+                  <th className="py-1.5 px-3 text-left font-bold uppercase text-[9px] tracking-widest border-r border-slate-700 print:border-slate-300">Keterangan Pendapatan</th>
+                  <th className="py-1.5 px-3 text-center font-bold uppercase text-[9px] tracking-widest border-r border-slate-700 print:border-slate-300 w-24">Kuantiti (Jam)</th>
+                  <th className="py-1.5 px-3 text-center font-bold uppercase text-[9px] tracking-widest border-r border-slate-700 print:border-slate-300 w-24">Kadar (RM)</th>
+                  <th className="py-1.5 px-3 text-right font-bold uppercase text-[9px] tracking-widest w-32">Jumlah (RM)</th>
                </tr>
              </thead>
              <tbody className="divide-y divide-slate-200 bg-white">
                <tr>
-                  <td className="py-3 px-4 font-bold text-slate-700 print:text-black border-r border-slate-300 uppercase text-xs">Gaji Asas (Mak: 45 Jam)</td>
-                  <td className="py-3 px-4 text-center font-medium border-r border-slate-300 print:text-black">{selectedPayslip.payInfo.totalRegularHours.toFixed(1)}</td>
-                  <td className="py-3 px-4 text-center font-medium border-r border-slate-300 print:text-black">{selectedPayslip.rate.toFixed(2)}</td>
-                  <td className="py-3 px-4 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.basicPay.toFixed(2)}</td>
+                  <td className="py-2 px-3 font-bold text-slate-700 print:text-black border-r border-slate-300 uppercase text-[10px]">Gaji Asas (Mak: 45 Jam)</td>
+                  <td className="py-2 px-3 text-center font-medium border-r border-slate-300 print:text-black">{selectedPayslip.payInfo.totalRegularHours.toFixed(1)}</td>
+                  <td className="py-2 px-3 text-center font-medium border-r border-slate-300 print:text-black">{selectedPayslip.rate.toFixed(2)}</td>
+                  <td className="py-2 px-3 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.basicPay.toFixed(2)}</td>
                </tr>
                {selectedPayslip.payInfo.totalOTHours > 0 && (
                <tr>
-                  <td className="py-3 px-4 font-bold text-slate-700 print:text-black border-r border-slate-300 flex items-center gap-2 uppercase text-xs"><div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Gaji Lebih Masa (OT 1.5x)</td>
-                  <td className="py-3 px-4 text-center font-medium border-r border-slate-300 text-slate-700 print:text-black">{selectedPayslip.payInfo.totalOTHours.toFixed(1)}</td>
-                  <td className="py-3 px-4 text-center font-medium border-r border-slate-300 text-slate-700 print:text-black">{selectedPayslip.payInfo.otRate.toFixed(2)}</td>
-                  <td className="py-3 px-4 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.otPay.toFixed(2)}</td>
+                  <td className="py-2 px-3 font-bold text-slate-700 print:text-black border-r border-slate-300 flex items-center gap-2 uppercase text-[10px]"><div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Gaji Lebih Masa (OT 1.5x)</td>
+                  <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-700 print:text-black">{selectedPayslip.payInfo.totalOTHours.toFixed(1)}</td>
+                  <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-700 print:text-black">{selectedPayslip.payInfo.otRate.toFixed(2)}</td>
+                  <td className="py-2 px-3 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.otPay.toFixed(2)}</td>
                </tr>
                )}
                {selectedPayslip.payInfo.totalAllowance > 0 && (
                <tr>
-                  <td className="py-3 px-4 font-bold text-slate-700 print:text-black border-r border-slate-300 flex items-center gap-2 uppercase text-xs"><div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Elaun Khas</td>
-                  <td className="py-3 px-4 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
-                  <td className="py-3 px-4 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
-                  <td className="py-3 px-4 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.totalAllowance.toFixed(2)}</td>
+                  <td className="py-2 px-3 border-r border-slate-300">
+                      <div className="font-bold text-slate-700 print:text-black flex items-center gap-2 uppercase text-[10px]">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Elaun Khas
+                      </div>
+                      {allowanceNotes && <div className="text-[8px] text-slate-500 print:text-slate-600 font-normal mt-0.5 ml-3.5 leading-tight">{allowanceNotes}</div>}
+                  </td>
+                  <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
+                  <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
+                  <td className="py-2 px-3 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.totalAllowance.toFixed(2)}</td>
                </tr>
                )}
                {selectedPayslip.payInfo.totalBonus > 0 && (
                <tr>
-                  <td className="py-3 px-4 font-bold text-slate-700 print:text-black border-r border-slate-300 flex items-center gap-2 uppercase text-xs"><div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Bonus Prestasi</td>
-                  <td className="py-3 px-4 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
-                  <td className="py-3 px-4 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
-                  <td className="py-3 px-4 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.totalBonus.toFixed(2)}</td>
+                  <td className="py-2 px-3 border-r border-slate-300">
+                      <div className="font-bold text-slate-700 print:text-black flex items-center gap-2 uppercase text-[10px]">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Bonus Prestasi
+                      </div>
+                      {bonusNotes && <div className="text-[8px] text-slate-500 print:text-slate-600 font-normal mt-0.5 ml-3.5 leading-tight">{bonusNotes}</div>}
+                  </td>
+                  <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
+                  <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
+                  <td className="py-2 px-3 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.totalBonus.toFixed(2)}</td>
                </tr>
                )}
              </tbody>
           </table>
 
-          <div className="flex justify-between items-end mb-6">
-             <div className="text-[9px] text-slate-500 print:text-black max-w-sm space-y-1 font-mono uppercase">
+          <div className="flex justify-between items-end mb-2">
+             <div className="text-[8px] text-slate-500 print:text-black max-w-[200px] space-y-0.5 font-mono uppercase">
                {selectedPayslip.payInfo.weeklyBreakdown.length > 0 && (
                  <>
-                   <div className="font-bold underline underline-offset-2 mb-1 text-slate-600 print:text-black">Log Kerja Mingguan:</div>
+                   <div className="font-bold underline mb-1 text-slate-600 print:text-black">Log Kerja Mingguan:</div>
                    {selectedPayslip.payInfo.weeklyBreakdown.map((wb, idx) => (
-                      <div key={idx} className="flex justify-between gap-4">
+                      <div key={idx} className="flex justify-between gap-2">
                         <span>{wb.date}:</span>
                         <span>{wb.total.toFixed(1)}J (ASAS:{wb.reg.toFixed(1)}|OT:{wb.ot.toFixed(1)})</span>
                       </div>
@@ -988,30 +1003,32 @@ const App = () => {
                )}
              </div>
 
-             <div className="w-72 bg-slate-800 print:bg-slate-100 text-white print:text-black p-4 rounded-xl print:rounded-none border border-slate-700 print:border-black shadow-lg print:shadow-none space-y-2">
-               <div className="flex justify-between text-xs font-bold text-slate-300 print:text-slate-700">
+             <div className="w-64 bg-slate-800 print:bg-slate-100 text-white print:text-black p-3 rounded-lg print:rounded-none border border-slate-700 print:border-black shadow-lg print:shadow-none space-y-1.5">
+               <div className="flex justify-between text-[10px] font-bold text-slate-300 print:text-slate-700">
                   <span>Pendapatan Kasar:</span>
                   <span>RM {selectedPayslip.payInfo.grossPay.toFixed(2)}</span>
                </div>
-               <div className="flex justify-between text-xs font-bold text-slate-300 print:text-slate-700 border-b border-slate-600 print:border-slate-300 pb-2">
-                  <span>Potongan (Advance):</span>
-                  <span className="text-rose-400 print:text-black">RM {selectedPayslip.payInfo.totalAdvance.toFixed(2)}</span>
+               <div className="flex justify-between text-[10px] font-bold text-slate-300 print:text-slate-700 border-b border-slate-600 print:border-slate-300 pb-1.5 flex-col">
+                  <div className="flex justify-between w-full">
+                     <span>Potongan (Advance):</span>
+                     <span className="text-rose-400 print:text-black">RM {selectedPayslip.payInfo.totalAdvance.toFixed(2)}</span>
+                  </div>
+                  {advanceNotes && <span className="text-[7px] font-normal text-slate-400 print:text-slate-600 normal-case leading-tight mt-0.5">Nota: {advanceNotes}</span>}
                </div>
-               <div className="flex justify-between items-center text-lg font-black pt-1">
+               <div className="flex justify-between items-center text-sm font-black pt-1">
                   <span className="uppercase tracking-widest text-[10px]">Gaji Bersih</span>
-                  <span className="text-xl">RM {selectedPayslip.payInfo.netPay.toFixed(2)}</span>
+                  <span className="text-lg">RM {selectedPayslip.payInfo.netPay.toFixed(2)}</span>
                </div>
              </div>
           </div>
 
-          <div className="flex justify-between text-[10px] font-bold text-slate-500 print:text-black mt-auto pt-6">
-             <div className="text-center">
-               <div className="w-40 border-b-2 border-slate-400 print:border-black mb-2 h-10"></div>
-               <p className="uppercase tracking-widest">Pengurus Operasi</p>
+          {/* Bahagian Tandatangan yang dijamin tidak hilang */}
+          <div className="flex justify-between text-[9px] font-bold text-slate-500 print:text-black mt-auto pt-4">
+             <div className="text-center w-36">
+               <div className="border-t border-slate-500 print:border-black pt-1 mt-6 uppercase tracking-widest">Pengurus Operasi</div>
              </div>
-             <div className="text-center">
-               <div className="w-40 border-b-2 border-slate-400 print:border-black mb-2 h-10"></div>
-               <p className="uppercase tracking-widest">Tandatangan Pekerja</p>
+             <div className="text-center w-36">
+               <div className="border-t border-slate-500 print:border-black pt-1 mt-6 uppercase tracking-widest">Tandatangan Pekerja</div>
              </div>
           </div>
 
@@ -1025,30 +1042,36 @@ const App = () => {
           </div>
         </div>
 
-        {/* CSS CETAKAN A5 YANG DIPERBAIKI (FIT TO PRINT AREA) */}
+        {/* CSS CETAKAN A5 YANG DIPERBAIKI (DIKUNCI KEPADA A5 SAHAJA) */}
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
               @page { 
-                  size: A5 landscape; 
-                  margin: 10mm; 
+                  size: 210mm 148mm; /* A5 Landscape terbalik */
+                  margin: 0mm !important; 
               }
               body, html { 
                   background-color: white !important; 
                   margin: 0 !important; 
                   padding: 0 !important; 
+                  width: 210mm !important;
+                  height: 148mm !important;
+                  overflow: hidden !important;
               }
               .print-hide { display: none !important; }
               .print-modal-content { 
-                  width: 100% !important; 
-                  height: auto !important;
+                  width: 210mm !important; 
+                  height: 148mm !important;
                   max-width: none !important; 
-                  padding: 0 !important; 
+                  padding: 8mm 12mm !important; 
                   margin: 0 !important; 
                   border: none !important; 
                   box-shadow: none !important; 
                   box-sizing: border-box !important;
-                  page-break-after: always;
-                  page-break-inside: avoid;
+                  display: flex !important;
+                  flex-direction: column !important;
+                  justify-content: space-between !important;
+                  page-break-after: avoid !important;
+                  page-break-inside: avoid !important;
               }
               * { 
                   -webkit-print-color-adjust: exact !important; 
