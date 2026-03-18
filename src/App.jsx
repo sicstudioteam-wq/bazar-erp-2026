@@ -807,7 +807,7 @@ const App = () => {
           
           <div className="flex justify-between items-center border-b-4 border-indigo-600 pb-6 mb-8">
              <div className="flex items-center gap-6">
-                 <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Raudhah+Team&background=e0e7ff&color=4f46e5&size=128"; }} />
+                 <img src="logo.png" alt="Logo" className="w-24 h-24 object-contain print:filter-none" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
                  <div>
                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900">Laporan Eksekutif</h1>
                    <p className="text-lg font-bold text-slate-500 mt-1 uppercase tracking-widest">Raudhah Team Resources (Bazar 2026)</p>
@@ -885,11 +885,15 @@ const App = () => {
 
   // === HALAMAN PREVIEW SLIP GAJI (EKSKLUSIF A5 LANDSCAPE KORPORAT) ===
   if (selectedPayslip) {
+    const allowanceNotes = selectedPayslip.records.filter(r => r.isAdjustment && r.allowance > 0 && r.desc).map(r => r.desc).join(', ');
+    const bonusNotes = selectedPayslip.records.filter(r => r.isAdjustment && r.bonus > 0 && r.desc).map(r => r.desc).join(', ');
+    const advanceNotes = selectedPayslip.records.filter(r => r.isAdjustment && r.advance > 0 && r.desc).map(r => r.desc).join(', ');
+
     return (
       <div className="min-h-screen bg-slate-300 p-4 md:p-8 print:p-0 print:bg-white flex justify-center items-center font-sans">
         
         {/* Kontena Utama Slip Gaji (Saiz Ditetapkan Secara Tepat Kepada A5) */}
-        <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content" style={{ width: '210mm', height: '148mm' }}>
+        <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content overflow-hidden" style={{ width: '210mm', height: '148mm' }}>
           
           <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-2 mb-3">
              {/* Kiri: Logo */}
@@ -957,7 +961,12 @@ const App = () => {
                )}
                {selectedPayslip.payInfo.totalAllowance > 0 && (
                <tr>
-                  <td className="py-2 px-3 font-bold text-slate-700 print:text-black border-r border-slate-300 flex items-center gap-2 uppercase text-[10px]"><div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Elaun Khas</td>
+                  <td className="py-2 px-3 border-r border-slate-300">
+                      <div className="font-bold text-slate-700 print:text-black flex items-center gap-2 uppercase text-[10px]">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Elaun Khas
+                      </div>
+                      {allowanceNotes && <div className="text-[8px] text-slate-500 print:text-slate-600 font-normal mt-0.5 ml-3.5 leading-tight">{allowanceNotes}</div>}
+                  </td>
                   <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
                   <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
                   <td className="py-2 px-3 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.totalAllowance.toFixed(2)}</td>
@@ -965,7 +974,12 @@ const App = () => {
                )}
                {selectedPayslip.payInfo.totalBonus > 0 && (
                <tr>
-                  <td className="py-2 px-3 font-bold text-slate-700 print:text-black border-r border-slate-300 flex items-center gap-2 uppercase text-[10px]"><div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Bonus Prestasi</td>
+                  <td className="py-2 px-3 border-r border-slate-300">
+                      <div className="font-bold text-slate-700 print:text-black flex items-center gap-2 uppercase text-[10px]">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-400 print:bg-black"></div> Bonus Prestasi
+                      </div>
+                      {bonusNotes && <div className="text-[8px] text-slate-500 print:text-slate-600 font-normal mt-0.5 ml-3.5 leading-tight">{bonusNotes}</div>}
+                  </td>
                   <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
                   <td className="py-2 px-3 text-center font-medium border-r border-slate-300 text-slate-400 print:text-black">-</td>
                   <td className="py-2 px-3 text-right font-black text-slate-900 print:text-black">{selectedPayslip.payInfo.totalBonus.toFixed(2)}</td>
@@ -994,9 +1008,12 @@ const App = () => {
                   <span>Pendapatan Kasar:</span>
                   <span>RM {selectedPayslip.payInfo.grossPay.toFixed(2)}</span>
                </div>
-               <div className="flex justify-between text-[10px] font-bold text-slate-300 print:text-slate-700 border-b border-slate-600 print:border-slate-300 pb-1.5">
-                  <span>Potongan (Advance):</span>
-                  <span className="text-rose-400 print:text-black">RM {selectedPayslip.payInfo.totalAdvance.toFixed(2)}</span>
+               <div className="flex justify-between text-[10px] font-bold text-slate-300 print:text-slate-700 border-b border-slate-600 print:border-slate-300 pb-1.5 flex-col">
+                  <div className="flex justify-between w-full">
+                     <span>Potongan (Advance):</span>
+                     <span className="text-rose-400 print:text-black">RM {selectedPayslip.payInfo.totalAdvance.toFixed(2)}</span>
+                  </div>
+                  {advanceNotes && <span className="text-[7px] font-normal text-slate-400 print:text-slate-600 normal-case leading-tight mt-0.5">Nota: {advanceNotes}</span>}
                </div>
                <div className="flex justify-between items-center text-sm font-black pt-1">
                   <span className="uppercase tracking-widest text-[10px]">Gaji Bersih</span>
