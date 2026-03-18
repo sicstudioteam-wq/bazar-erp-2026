@@ -895,7 +895,7 @@ const App = () => {
              {/* Kiri: Logo (DIKEMASKINI dengan imej yang dimuat naik) */}
              <div className="w-1/4 flex justify-start">
                  <img 
-                     src="ChatGPT Image Mar 4, 2026, 10_06_45 PM.jpg" 
+                     src="logo.png" 
                      alt="Logo Syarikat" 
                      className="w-24 h-auto max-h-24 object-contain print:w-28"
                  />
