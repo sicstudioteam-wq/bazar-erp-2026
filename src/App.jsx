@@ -895,7 +895,7 @@ const App = () => {
              {/* Kiri: Logo */}
              <div className="w-1/4 flex justify-start">
                  <img 
-                     src="image_9c5d82.png" 
+                     src="logo.png" 
                      alt="Logo Syarikat" 
                      className="w-16 h-16 object-contain print:filter-none"
                      onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
