@@ -889,13 +889,13 @@ const App = () => {
       <div className="min-h-screen bg-slate-300 p-4 md:p-8 print:p-0 print:bg-white flex justify-center items-center font-sans">
         
         {/* Kontena Utama Slip Gaji (Saiz Ditetapkan Secara Tepat Kepada A5) */}
-        <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content overflow-hidden" style={{ width: '210mm', height: '148mm' }}>
+        <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content" style={{ width: '210mm', height: '148mm' }}>
           
           <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-2 mb-3">
              {/* Kiri: Logo */}
              <div className="w-1/4 flex justify-start">
                  <img 
-                     src="logo.png" 
+                     src="image_9c5d82.png" 
                      alt="Logo Syarikat" 
                      className="w-16 h-16 object-contain print:filter-none"
                      onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
