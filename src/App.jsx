@@ -802,8 +802,9 @@ const App = () => {
   // === HALAMAN PREVIEW REPORT SLIDE (A4 LANDSCAPE) ===
   if (isReportSlide) {
     return (
-      <div className="min-h-screen bg-slate-300 p-8 print:p-0 print:bg-white flex justify-center items-center font-sans">
-        <div className="w-[297mm] min-h-[210mm] bg-white border-2 border-slate-200 p-12 text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content-slide">
+      <div className="min-h-screen bg-slate-300 p-8 print:p-0 print:bg-white flex justify-center items-center font-sans overflow-x-hidden">
+        <div className="relative flex mx-auto">
+          <div className="w-[297mm] min-h-[210mm] bg-white border-2 border-slate-200 p-12 text-slate-900 shadow-2xl flex flex-col print-modal-content-slide">
           
           <div className="flex justify-between items-center border-b-4 border-indigo-600 pb-6 mb-8">
              <div className="flex items-center gap-6">
@@ -858,9 +859,10 @@ const App = () => {
           <div className="text-center text-xs font-bold text-slate-400 mt-auto uppercase tracking-widest print:text-black">
              Jana Secara Automatik Menggunakan Sistem ERP Bazar 2026
           </div>
+          </div>
 
-          {/* Butang Tindakan */}
-          <div className="absolute -right-24 top-0 flex flex-col gap-4 print-hide">
+          {/* Butang Tindakan (Dikeluarkan dari kotak utama supaya tidak terpotong) */}
+          <div className="absolute -right-24 top-0 flex flex-col gap-4 print-hide z-50">
             <button onClick={() => window.print()} className="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-all border-4 border-white" title="Cetak/Save PDF">
               <Printer className="w-6 h-6" />
             </button>
@@ -890,10 +892,11 @@ const App = () => {
     const advanceNotes = selectedPayslip.records.filter(r => r.isAdjustment && r.advance > 0 && r.desc).map(r => r.desc).join(', ');
 
     return (
-      <div className="min-h-screen bg-slate-300 p-4 md:p-8 print:p-0 print:bg-white flex justify-center items-center font-sans">
+      <div className="min-h-screen bg-slate-300 p-4 md:p-8 print:p-0 print:bg-white flex justify-center items-center font-sans overflow-x-hidden">
         
         {/* Kontena Utama Slip Gaji (Saiz Ditetapkan Secara Tepat Kepada A5) */}
-        <div className="bg-white border-2 border-black text-slate-900 shadow-2xl relative flex flex-col mx-auto print-modal-content overflow-hidden" style={{ width: '210mm', height: '148mm' }}>
+        <div className="relative flex mx-auto">
+          <div className="bg-white border-2 border-black text-slate-900 shadow-2xl flex flex-col print-modal-content" style={{ width: '210mm', height: '148mm' }}>
           
           <div className="flex justify-between items-center border-b-[3px] border-slate-800 pb-2 mb-3">
              {/* Kiri: Logo */}
@@ -1031,8 +1034,10 @@ const App = () => {
                <div className="border-t border-slate-500 print:border-black pt-1 mt-6 uppercase tracking-widest">Tandatangan Pekerja</div>
              </div>
           </div>
+          </div>
 
-          <div className="absolute -right-24 top-0 flex flex-col gap-4 print-hide">
+          {/* Butang Tindakan (Dikeluarkan dari kotak utama supaya tidak terpotong) */}
+          <div className="absolute -right-20 top-0 flex flex-col gap-4 print-hide z-50">
             <button onClick={() => window.print()} className="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-all border-4 border-white" title="Cetak Slip">
               <Printer className="w-6 h-6" />
             </button>
