@@ -6,7 +6,7 @@ import {
 import { 
   TrendingUp, Users, ShoppingBag, MapPin, Calendar, ArrowUpRight, 
   ArrowDownRight, LayoutDashboard, Wallet, Receipt, Calculator, 
-  ChevronDown, ChevronUp, Smartphone, Banknote, History, Package, 
+  ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Smartphone, Banknote, History, Package, 
   Layers, Clock, Box, Plus, Minus, Save, FileText, Printer, Trash2, Edit3, 
   DollarSign, CheckCircle2, X, Tag, AlertTriangle, Download,
   FileSpreadsheet, Presentation, Database, Upload, RefreshCcw, Building2,
@@ -179,16 +179,13 @@ const App = () => {
   // --- ERP STATES ---
   const [erpTab, setErpTab] = useState('overview');
   const [selectedPayslip, setSelectedPayslip] = useState(null);
-  const [isReportSlide, setIsReportSlide] = useState(false);
 
   // --- MODALS & UTILS ---
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinAction, setPinAction] = useState(null);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
-  const [saleToVoid, setSaleToVoid] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', message: '', confirmText: 'Teruskan', isDestructive: false, onConfirm: null });
-  const sliderRefReport = useRef(null);
 
   // --- INIT FIREBASE ---
   useEffect(() => {
@@ -258,13 +255,10 @@ const App = () => {
   }, [location, localStaffName]);
 
   // --- ERP CALCULATION ENGINE ---
-  // Ini adalah teras yang menggabungkan data POS individu kepada keseluruhan ERP
   const erpTotals = useMemo(() => {
     let totalSales = 0, kgBelah2CashTotal = 0, kgBelah2QRTotal = 0, evokeCashTotal = 0, evokeQRTotal = 0;
     
-    // Kira jualan. Menyokong format lama (manual ERP) dan format baru (dari POS)
     allSales.forEach(s => {
-      // Jika dari POS (Format baru ada medan 'total' & 'paymentMethod')
       if (s.total !== undefined && s.paymentMethod) {
           totalSales += Number(s.total);
           if (s.location === 'Kg Belah 2') {
@@ -275,7 +269,6 @@ const App = () => {
               if (s.paymentMethod === 'QR Pay') evokeQRTotal += Number(s.total);
           }
       } else {
-          // Format Lama (Jika masih ada rekod lama)
           const kbc = Number(s.kgBelah2Cash ?? s.suteraCash ?? 0);
           const kbq = Number(s.kgBelah2QR ?? s.suteraQR ?? 0);
           const ec = Number(s.evokeCash || 0);
@@ -289,11 +282,9 @@ const App = () => {
     const totalKgBelah2Sales = kgBelah2CashTotal + kgBelah2QRTotal;
     const totalEvokeSales = evokeCashTotal + evokeQRTotal;
 
-    // Kira Belanja (Menyatukan belian stok manual ERP & expense POS semasa tutup syif)
     const totalExpenses = allExpenses.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
     const totalCogs = allStock.reduce((acc, curr) => acc + Number(curr.total || 0), 0);
 
-    // Kira Gaji
     const uniqueStaffIds = [...new Set(staffWorkRecords.map(r => r.staffId))];
     const totalWages = uniqueStaffIds.reduce((acc, staffId) => {
       const staff = staffConfig.find(s => s.id === staffId) || { rate: 8.20 };
@@ -370,21 +361,14 @@ const App = () => {
     setCart([]);
   };
 
-  const voidSaleInCloud = async (saleId) => {
-    if (!user || !saleId) return;
-    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sales', saleId));
-  };
-
   const handleAddExpensePOS = async () => {
     if (!expenseDesc || !expenseAmount || !user) return;
-    // Tambah dalam koleksi expenses (supaya sinkroni terus dengan ERP)
     const newExp = {
       date: posDate, location, item: expenseDesc, amount: parseFloat(expenseAmount),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), staffName: localStaffName, isAdvanced: false
     };
     await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'expenses'), newExp);
     
-    // Log juga di dalam sesi untuk rujukan penutup syif
     const currentSession = allSessions.find(s => s.location === location && s.date === posDate);
     const currentExpenses = currentSession?.expenses || [];
     await updateSessionData({ expenses: [...currentExpenses, { id: Date.now().toString(), desc: expenseDesc, amount: parseFloat(expenseAmount), staffName: localStaffName, time: newExp.time }] });
@@ -396,14 +380,12 @@ const App = () => {
     const actual = parseFloat(actualCash) || 0;
     const diff = actual - expectedCash;
     
-    // Kira log masa automatik untuk payroll! (Auto clock-out)
     const currentSession = allSessions.find(s => s.location === location && s.date === posDate);
     if (currentSession && currentSession.updatedAt) {
        const shiftStart = new Date(currentSession.updatedAt);
        const shiftEnd = new Date();
        const hoursDiff = (shiftEnd - shiftStart) / (1000 * 60 * 60);
        
-       // Daftar kehadiran ke dalam payroll secara automatik (Bonus ERP integration!)
        const staffId = closeStaffName.toLowerCase().replace(/[^a-z0-9]/g, '_');
        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'staff_work'), {
           date: posDate,
@@ -423,6 +405,20 @@ const App = () => {
     });
 
     setShowClosingSuccess(true);
+  };
+
+  const handleDownloadExcel = () => {
+    let csv = "Tarikh,KB2 Cash,KB2 QR,Evoke Cash,Evoke QR,Total\n";
+    allSales.forEach(s => {
+      const total = (Number(s.kgBelah2Cash??s.suteraCash??0) + Number(s.kgBelah2QR??s.suteraQR??0) + Number(s.evokeCash||0) + Number(s.evokeQR||0));
+      csv += `${s.date},${s.kgBelah2Cash??s.suteraCash??0},${s.kgBelah2QR??s.suteraQR??0},${s.evokeCash||0},${s.evokeQR||0},${total.toFixed(2)}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Bazar_2026_Sales_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
   };
 
 
@@ -447,7 +443,7 @@ const App = () => {
 
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl z-10 animate-in zoom-in-95 duration-500 delay-150">
             {/* Butang POS */}
-            <button onClick={() => setMainMode('pos')} className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 p-10 rounded-[2.5rem] hover:bg-blue-600 hover:border-blue-400 group transition-all text-left flex flex-col justify-between min-h-[250px] shadow-2xl">
+            <button onClick={() => { setPosView('home'); setMainMode('pos'); }} className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 p-10 rounded-[2.5rem] hover:bg-blue-600 hover:border-blue-400 group transition-all text-left flex flex-col justify-between min-h-[250px] shadow-2xl">
                <div>
                   <div className="bg-slate-700/50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-white/20 transition-all">
                      <Store className="w-8 h-8 text-blue-400 group-hover:text-white" />
@@ -504,6 +500,15 @@ const App = () => {
   if (mainMode === 'pos') {
     const posSalesFiltered = allSales.filter(s => s.location === location && s.date === posDate);
     posSalesFiltered.sort((a,b) => b.timestamp - a.timestamp);
+
+    // Pengiraan untuk Laporan Tutup Syif
+    const currentSession = allSessions.find(s => s.location === location && s.date === posDate);
+    const pcAmt = parseFloat(currentSession?.pettyCash || pettyCash) || 0;
+    const expList = currentSession?.expenses || [];
+    const expTot = expList.reduce((sum, e) => sum + parseFloat(e.amount||0), 0);
+    const cashTot = posSalesFiltered.filter(s => s.paymentMethod === 'Cash').reduce((sum, s) => sum + (s.total||0), 0);
+    const expectedLaci = cashTot + pcAmt - expTot;
+    const isSessionClosed = currentSession?.isClosed;
     
     return (
       <div className="bg-slate-50 min-h-screen">
@@ -636,7 +641,7 @@ const App = () => {
                  {posSalesFiltered.slice(0, 3).map(s => (
                    <div key={s.id} className="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
                      <div>
-                       <div className="text-sm font-black text-slate-800">RM {s.total} <span className="text-[10px] text-slate-500 font-normal">({s.items.length} item)</span></div>
+                       <div className="text-sm font-black text-slate-800">RM {s.total} <span className="text-[10px] text-slate-500 font-normal">({s.items?.length || 0} item)</span></div>
                        <div className="text-[9px] text-slate-500 uppercase tracking-widest mt-1"><span className="text-blue-600">{s.staffName}</span> • {s.time} • <span className="text-amber-500">{s.paymentMethod}</span></div>
                      </div>
                      <CheckCircle2 className="text-blue-500" size={18} />
@@ -656,73 +661,62 @@ const App = () => {
          )}
 
          {/* POS REPORT (Tutup Syif) */}
-         {posView === 'report' && (() => {
-            const currentSession = allSessions.find(s => s.location === location && s.date === posDate);
-            const pcAmt = parseFloat(currentSession?.pettyCash || pettyCash) || 0;
-            const expList = currentSession?.expenses || [];
-            const expTot = expList.reduce((sum, e) => sum + parseFloat(e.amount||0), 0);
-            
-            const daySales = allSales.filter(s => s.location === location && s.date === posDate);
-            const cashTot = daySales.filter(s => s.paymentMethod === 'Cash').reduce((sum, s) => sum + (s.total||0), 0);
-            const expectedLaci = cashTot + pcAmt - expTot;
-            const isClosed = currentSession?.isClosed;
-
-            return (
-              <div className="p-6 max-w-md mx-auto space-y-6 pb-12 bg-slate-50 min-h-screen">
-                <div className="flex justify-between bg-white p-4 rounded-2xl shadow-sm items-center border">
-                  <button onClick={() => setPosView('sales')} className="text-blue-700 font-black text-[10px] uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl"><ChevronLeft size={16} className="inline mr-1"/> Jualan</button>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Penutup Syif</span>
-                </div>
-
-                <div className="bg-white p-6 rounded-[2rem] shadow-sm border space-y-4">
-                   <h3 className="font-black text-xs uppercase tracking-widest border-b pb-3 flex items-center gap-2"><Receipt size={16} className="text-rose-500"/> Ambilan / Belian</h3>
-                   {!isClosed && (
-                     <div className="flex gap-2">
-                       <input type="text" value={expenseDesc} onChange={e=>setExpenseDesc(e.target.value)} placeholder="Beli Ais" className="flex-1 bg-slate-50 border p-3 rounded-xl text-xs" />
-                       <input type="number" value={expenseAmount} onChange={e=>setExpenseAmount(e.target.value)} placeholder="RM" className="w-20 bg-slate-50 border p-3 rounded-xl text-xs text-center" />
-                       <button onClick={handleAddExpensePOS} className="bg-rose-50 text-rose-600 p-3 rounded-xl"><Plus size={16}/></button>
-                     </div>
-                   )}
-                   <div className="space-y-2 text-xs">
-                     {expList.map(e => (
-                       <div key={e.id} className="flex justify-between p-3 bg-slate-50 rounded-lg"><span>{e.desc}</span><span className="text-rose-500 font-bold">-RM {e.amount}</span></div>
-                     ))}
-                   </div>
-                   <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest pt-2"><span className="text-slate-500">Jumlah Belanja</span><span className="text-rose-600">RM {expTot}</span></div>
-                </div>
-
-                <div className="bg-slate-800 p-6 rounded-[2rem] shadow-xl text-white space-y-5">
-                   <h3 className="font-black text-xs uppercase tracking-widest border-b border-slate-700 pb-3 flex items-center gap-2 text-blue-400"><Lock size={16}/> Borang Penutup</h3>
-                   
-                   {!isClosed ? (
-                     <>
-                       <div className="space-y-3">
-                         <input type="text" value={closeStaffName} onChange={e=>setCloseStaffName(e.target.value)} placeholder="NAMA PENGURUS SYIF" className="w-full p-4 bg-slate-700 border border-slate-600 rounded-xl text-xs font-bold uppercase focus:border-blue-400 outline-none" />
-                         <input type="number" value={actualCash} onChange={e=>setActualCash(e.target.value)} placeholder="Tunai Fizikal (RM)" className="w-full p-4 bg-slate-700 border border-slate-600 rounded-xl text-2xl font-black text-emerald-400 text-center focus:border-blue-400 outline-none" />
-                       </div>
-                       <div className="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                         <span className="text-[9px] text-amber-500 font-bold uppercase tracking-widest text-center block mb-3">Baki Stok Fizikal Akhir</span>
-                         <div className="grid grid-cols-2 gap-3">
-                           <input type="number" value={actualStockAyam} onChange={e=>setActualStockAyam(e.target.value)} placeholder="Ayam (Pcs)" className="bg-slate-700 p-3 rounded-lg text-center font-bold outline-none border border-slate-600 focus:border-blue-400" />
-                           <input type="number" value={actualStockSosej} onChange={e=>setActualStockSosej(e.target.value)} placeholder="Sosej (Pcs)" className="bg-slate-700 p-3 rounded-lg text-center font-bold outline-none border border-slate-600 focus:border-blue-400" />
-                         </div>
-                       </div>
-                       <button onClick={() => setConfirmDialog({isOpen:true, title:'Tutup Syif', message:'Sahkan kiraan fizikal dan hantar ke HQ (ERP)?', isDestructive:false, confirmText:'Ya, Hantar', onConfirm: () => handleCloseShift(expectedLaci)})} className="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-md">Hantar Ke ERP</button>
-                     </>
-                   ) : (
-                     <div className="text-center space-y-4">
-                       <div className="bg-emerald-900/30 border border-emerald-800 p-4 rounded-xl text-emerald-400">
-                         <span className="block text-[10px] font-bold uppercase mb-1">Status Laci Tunai</span>
-                         <span className="text-xl font-black">{currentSession.cashDifference === 0 ? 'TEPAT' : (currentSession.cashDifference > 0 ? `LEBIH RM ${currentSession.cashDifference}` : `KURANG RM ${Math.abs(currentSession.cashDifference)}`)}</span>
-                       </div>
-                       <div className="text-xs text-slate-400 italic">Syif telah ditutup dan dihantar ke Dashboard ERP.</div>
-                     </div>
-                   )}
-                </div>
+         {posView === 'report' && (
+            <div className="p-6 max-w-md mx-auto space-y-6 pb-12 bg-slate-50 min-h-screen">
+              <div className="flex justify-between bg-white p-4 rounded-2xl shadow-sm items-center border">
+                <button onClick={() => setPosView('sales')} className="text-blue-700 font-black text-[10px] uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl"><ChevronLeft size={16} className="inline mr-1"/> Jualan</button>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Penutup Syif</span>
               </div>
-            );
-         })()}
+
+              <div className="bg-white p-6 rounded-[2rem] shadow-sm border space-y-4">
+                 <h3 className="font-black text-xs uppercase tracking-widest border-b pb-3 flex items-center gap-2"><Receipt size={16} className="text-rose-500"/> Ambilan / Belian</h3>
+                 {!isSessionClosed && (
+                   <div className="flex gap-2">
+                     <input type="text" value={expenseDesc} onChange={e=>setExpenseDesc(e.target.value)} placeholder="Beli Ais" className="flex-1 bg-slate-50 border p-3 rounded-xl text-xs" />
+                     <input type="number" value={expenseAmount} onChange={e=>setExpenseAmount(e.target.value)} placeholder="RM" className="w-20 bg-slate-50 border p-3 rounded-xl text-xs text-center" />
+                     <button onClick={handleAddExpensePOS} className="bg-rose-50 text-rose-600 p-3 rounded-xl"><Plus size={16}/></button>
+                   </div>
+                 )}
+                 <div className="space-y-2 text-xs">
+                   {expList.map(e => (
+                     <div key={e.id} className="flex justify-between p-3 bg-slate-50 rounded-lg"><span>{e.desc}</span><span className="text-rose-500 font-bold">-RM {e.amount}</span></div>
+                   ))}
+                 </div>
+                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest pt-2"><span className="text-slate-500">Jumlah Belanja</span><span className="text-rose-600">RM {expTot}</span></div>
+              </div>
+
+              <div className="bg-slate-800 p-6 rounded-[2rem] shadow-xl text-white space-y-5">
+                 <h3 className="font-black text-xs uppercase tracking-widest border-b border-slate-700 pb-3 flex items-center gap-2 text-blue-400"><Lock size={16}/> Borang Penutup</h3>
+                 
+                 {!isSessionClosed ? (
+                   <>
+                     <div className="space-y-3">
+                       <input type="text" value={closeStaffName} onChange={e=>setCloseStaffName(e.target.value)} placeholder="NAMA PENGURUS SYIF" className="w-full p-4 bg-slate-700 border border-slate-600 rounded-xl text-xs font-bold uppercase focus:border-blue-400 outline-none" />
+                       <input type="number" value={actualCash} onChange={e=>setActualCash(e.target.value)} placeholder="Tunai Fizikal (RM)" className="w-full p-4 bg-slate-700 border border-slate-600 rounded-xl text-2xl font-black text-emerald-400 text-center focus:border-blue-400 outline-none" />
+                     </div>
+                     <div className="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                       <span className="text-[9px] text-amber-500 font-bold uppercase tracking-widest text-center block mb-3">Baki Stok Fizikal Akhir</span>
+                       <div className="grid grid-cols-2 gap-3">
+                         <input type="number" value={actualStockAyam} onChange={e=>setActualStockAyam(e.target.value)} placeholder="Ayam (Pcs)" className="bg-slate-700 p-3 rounded-lg text-center font-bold outline-none border border-slate-600 focus:border-blue-400" />
+                         <input type="number" value={actualStockSosej} onChange={e=>setActualStockSosej(e.target.value)} placeholder="Sosej (Pcs)" className="bg-slate-700 p-3 rounded-lg text-center font-bold outline-none border border-slate-600 focus:border-blue-400" />
+                       </div>
+                     </div>
+                     <button onClick={() => setConfirmDialog({isOpen:true, title:'Tutup Syif', message:'Sahkan kiraan fizikal dan hantar ke HQ (ERP)?', isDestructive:false, confirmText:'Ya, Hantar', onConfirm: () => handleCloseShift(expectedLaci)})} className="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-md">Hantar Ke ERP</button>
+                   </>
+                 ) : (
+                   <div className="text-center space-y-4">
+                     <div className="bg-emerald-900/30 border border-emerald-800 p-4 rounded-xl text-emerald-400">
+                       <span className="block text-[10px] font-bold uppercase mb-1">Status Laci Tunai</span>
+                       <span className="text-xl font-black">{currentSession.cashDifference === 0 ? 'TEPAT' : (currentSession.cashDifference > 0 ? `LEBIH RM ${currentSession.cashDifference}` : `KURANG RM ${Math.abs(currentSession.cashDifference)}`)}</span>
+                     </div>
+                     <div className="text-xs text-slate-400 italic">Syif telah ditutup dan dihantar ke Dashboard ERP.</div>
+                   </div>
+                 )}
+              </div>
+            </div>
+         )}
          
+         {/* TAHNIAH Modal */}
          {showClosingSuccess && (
            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[70] animate-in zoom-in">
              <div className="bg-white p-8 rounded-[2.5rem] text-center max-w-sm w-full">
